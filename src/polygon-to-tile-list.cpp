@@ -131,7 +131,6 @@ int main(int argc, char* argv[]) {
         print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix);
     }
 
-    // med zoom range
     if (!shapefile_path.empty()) {
         GDALIntersectingTilesFinder finder {verbose, static_cast<uint32_t>(minzoom), static_cast<uint32_t>(maxzoom)};
         finder.find_intersections(shapefile_path, buffer_size);
