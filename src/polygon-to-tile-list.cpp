@@ -32,6 +32,7 @@ void print_usage(char* argv[]) {
     "Positional Arguments:\n" \
     "Options:\n" \
     "  -h, --help                  print help and exit\n" \
+    "  -a STR, --aappedn=STR       Print following string at the end of the output. The program will append newline character to the string\n" \
     "  -b BBOX, --bbox=BBOX        bounding box separated by comma: min_lon,min_lat,max_lon,max_lat\n" \
     "  -g PATH, --geom=PATH        Print all tiles intersecting with the (multi)linestrings and (multi)polygons in the specified file\n" \
     "  -s SUFFIX, --suffix=SUFFIX  suffix to append (do not forget the leading dot)\n" \
@@ -44,6 +45,7 @@ void print_usage(char* argv[]) {
 
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
+        {"append", required_argument, 0, 'a'},
         {"bbox", required_argument, 0, 'b'},
         {"buffer-size", required_argument, 0, 'B'},
         {"geom", required_argument, 0, 'g'},
@@ -65,15 +67,19 @@ int main(int argc, char* argv[]) {
     std::string shapefile_path;
     FILE* output_file = stdout;
     std::string suffix;
+    std::string append_str;
 
     char* rest;
     while (true) {
-        int c = getopt_long(argc, argv, "B:b:g:z:Z:o:s:vh", long_options, 0);
+        int c = getopt_long(argc, argv, "a:B:b:g:z:Z:o:s:vh", long_options, 0);
         if (c == -1) {
             break;
         }
 
         switch (c) {
+        case 'a':
+            append_str = optarg;
+            break;
         case 'B':
             buffer_size = strtod(optarg, &rest);
             break;
@@ -139,6 +145,9 @@ int main(int argc, char* argv[]) {
         }
         finder.output(output_file, suffix);
     } // close scope to ensure that destructor of IntersectingTilesFinder is called now to free memory.
+    if (!append_str.empty()) {
+        fprintf(output_file, "%s\n", append_str.c_str());
+    }
     if (output_file != stdout) {
         if (fclose(output_file) != 0) {
             std::cerr << "ERROR: closing output file failed\n";
