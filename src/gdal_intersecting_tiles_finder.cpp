@@ -59,8 +59,9 @@ void GDALIntersectingTilesFinder::handle_geos_geometry(geos_geom_type geometry, 
     // 6) check which tiles intersect, add them to the tile list
     for (uint32_t x = tile_range.xmin; x <= tile_range.xmax; ++x) {
         for (uint32_t y = tile_range.ymin; y <= tile_range.ymax; ++y) {
-            // shortcut: If zoom range is 1 tile wide or high, skip the intersection check
-            if (tile_range.width() == 1 || tile_range.height() == 1) {
+            // Shortcut: If zoom range is 1 tile wide or high (i.e. difference between min and max
+            // is 0), skip the intersection check.
+            if (tile_range.width() == 0 || tile_range.height() == 0) {
                 m_tile_list.add_tile(x, y);
                 continue;
             }
