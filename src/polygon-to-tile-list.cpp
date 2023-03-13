@@ -139,6 +139,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    if (!bbox_enabled && shapefile_path.empty()) {
+        std::cerr << "ERROR: Neither a bounding box nor a polygon was provided.\n";
+        print_usage(argv);
+        exit(1);
+    }
+
     if (bbox_enabled) {
         print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix, delimiter);
     }
