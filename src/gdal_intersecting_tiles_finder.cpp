@@ -183,7 +183,9 @@ void GDALIntersectingTilesFinder::find_intersections(const std::string& path, co
             std::cerr << "WARNING: Skipping empty layer " << layer->GetName() << " of " << path << '\n';
             continue;
         }
-        std::cerr << "Processing " << layer->GetFeatureCount() << " features from layer " << layer->GetName() << " of " << path << '\n';
+        if (m_verbose) {
+            std::cerr << "Processing " << layer->GetFeatureCount() << " features from layer " << layer->GetName() << " of " << path << '\n';
+        }
         handle_layer(layer, buffer_size);
     }
 }
