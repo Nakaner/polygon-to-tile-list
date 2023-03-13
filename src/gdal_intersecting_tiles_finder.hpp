@@ -88,7 +88,7 @@ public:
 
     void find_intersections(const std::string& input_filepath, const double buffer_size);
 
-    void output(FILE* output_file, const std::string& suffix);
+    void output(FILE* output_file, const std::string& suffix, const char delimiter);
 };
 
 

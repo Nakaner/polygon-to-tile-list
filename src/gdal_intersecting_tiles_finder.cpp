@@ -109,8 +109,8 @@ void GDALIntersectingTilesFinder::reset_progress() {
     }
 }
 
-void GDALIntersectingTilesFinder::output(FILE* output_file, const std::string& suffix) {
-    m_tile_list.output(output_file, m_minzoom, suffix);
+void GDALIntersectingTilesFinder::output(FILE* output_file, const std::string& suffix, const char delimiter) {
+    m_tile_list.output(output_file, m_minzoom, suffix, delimiter);
 }
 
 void GDALIntersectingTilesFinder::handle_geometry(OGRGeometry* geometry,

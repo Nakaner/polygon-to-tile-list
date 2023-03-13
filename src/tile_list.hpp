@@ -93,7 +93,7 @@ public:
      */
     void add_tile(uint32_t x, uint32_t y);
 
-    void output(FILE* output_file, uint32_t minzoom, const std::string& suffix);
+    void output(FILE* output_file, uint32_t minzoom, const std::string& suffix, const char delimiter);
 };
 
 

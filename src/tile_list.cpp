@@ -26,7 +26,7 @@ void TileList::add_tile(uint32_t x, uint32_t y)
     }
 }
 
-void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& suffix)
+void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& suffix, const char delimiter)
 {
     // build a sorted vector of all expired tiles
     std::vector<uint64_t> tiles_maxzoom(m_dirty_tiles.begin(),
@@ -52,7 +52,7 @@ void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& su
                 continue;
             }
             xy_coord_t xy = quadkey_to_xy(qt_current, maxzoom - dz);
-            fprintf(output_file, "%u/%u/%u%s\n", maxzoom - dz, xy.x, xy.y, suffix.c_str());
+            fprintf(output_file, "%u/%u/%u%s%c", maxzoom - dz, xy.x, xy.y, suffix.c_str(), delimiter);
         }
         last_quadkey = *it;
     }

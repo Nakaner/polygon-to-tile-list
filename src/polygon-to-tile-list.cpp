@@ -16,12 +16,12 @@
 
 
 void print_all_tiles_on_range(FILE* output_file, const uint32_t minzoom, const uint32_t maxzoom,
-        const BoundingBox& bbox, const std::string& suffix) {
+        const BoundingBox& bbox, const std::string& suffix, const char delimiter) {
     for (uint32_t z = minzoom; z <= maxzoom; ++z) {
         ZoomRange range = ZoomRange::from_bbox_geographic(bbox, z);
         for (uint32_t x = range.xmin; x <= range.xmax; ++x) {
             for (uint32_t y = range.ymin; y <= range.ymax; ++y) {
-                fprintf(output_file, "%u/%u/%u%s\n", z, x, y, suffix.c_str());
+                fprintf(output_file, "%u/%u/%u%s%c", z, x, y, suffix.c_str(), delimiter);
             }
         }
     }
@@ -32,9 +32,10 @@ void print_usage(char* argv[]) {
     "Positional Arguments:\n" \
     "Options:\n" \
     "  -h, --help                  print help and exit\n" \
-    "  -a STR, --aappedn=STR       Print following string at the end of the output. The program will append newline character to the string\n" \
+    "  -a STR, --append=STR       Print following string at the end of the output. The program will append newline character to the string\n" \
     "  -b BBOX, --bbox=BBOX        bounding box separated by comma: min_lon,min_lat,max_lon,max_lat\n" \
     "  -g PATH, --geom=PATH        Print all tiles intersecting with the (multi)linestrings and (multi)polygons in the specified file\n" \
+    "  -n, --null                  Use NULL character, not LF as file delimiter.\n" \
     "  -s SUFFIX, --suffix=SUFFIX  suffix to append (do not forget the leading dot)\n" \
     "  -z ZOOM, --minzoom=ZOOM     minimum zoom level, defaults to 0\n" \
     "  -Z ZOOM, --maxzoom=ZOOM     maximum zoom level, defaults to 14\n" \
@@ -51,6 +52,7 @@ int main(int argc, char* argv[]) {
         {"geom", required_argument, 0, 'g'},
         {"minzoom", required_argument, 0, 'z'},
         {"maxzoom", required_argument, 0, 'Z'},
+        {"null", no_argument, 0, 'n'},
         {"output", required_argument, 0, 'o'},
         {"suffix", required_argument, 0, 's'},
         {"help",  no_argument, 0, 'h'},
@@ -59,6 +61,7 @@ int main(int argc, char* argv[]) {
     };
 
     bool verbose = false;
+    char delimiter = '\n';
     int minzoom = 0;
     int maxzoom = 14;
     double buffer_size = 0.0;
@@ -71,7 +74,7 @@ int main(int argc, char* argv[]) {
 
     char* rest;
     while (true) {
-        int c = getopt_long(argc, argv, "a:B:b:g:z:Z:o:s:vh", long_options, 0);
+        int c = getopt_long(argc, argv, "a:B:b:g:nz:Z:o:s:vh", long_options, 0);
         if (c == -1) {
             break;
         }
@@ -89,6 +92,9 @@ int main(int argc, char* argv[]) {
             break;
         case 'g':
             shapefile_path = optarg;
+            break;
+        case 'n':
+            delimiter = '\0';
             break;
         case 's':
             suffix = optarg;
@@ -134,7 +140,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (bbox_enabled) {
-        print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix);
+        print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix, delimiter);
     }
 
     if (!shapefile_path.empty()) {
@@ -143,10 +149,10 @@ int main(int argc, char* argv[]) {
         if (verbose) {
             std::cerr << "dumping tiles on medium zoom levels\n";
         }
-        finder.output(output_file, suffix);
+        finder.output(output_file, suffix, delimiter);
     } // close scope to ensure that destructor of IntersectingTilesFinder is called now to free memory.
     if (!append_str.empty()) {
-        fprintf(output_file, "%s\n", append_str.c_str());
+        fprintf(output_file, "%s%c", append_str.c_str(), delimiter);
     }
     if (output_file != stdout) {
         if (fclose(output_file) != 0) {
