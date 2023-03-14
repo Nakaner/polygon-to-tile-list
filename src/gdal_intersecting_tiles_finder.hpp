@@ -84,11 +84,11 @@ class GDALIntersectingTilesFinder {
 public:
     GDALIntersectingTilesFinder() = delete;
 
-    GDALIntersectingTilesFinder(const bool verbose, uint32_t minzoom, uint32_t maxzoom);
+    GDALIntersectingTilesFinder(const bool verbose, uint32_t minzoom, uint32_t maxzoom, const bool check_tiles);
 
     void find_intersections(const std::string& input_filepath, const double buffer_size);
 
-    void output(FILE* output_file, const std::string& suffix, const char delimiter);
+    void output(FILE* output_file, const std::string& suffix, const char delimiter, const std::string& path);
 };
 
 

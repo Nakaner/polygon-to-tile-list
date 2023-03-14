@@ -6,13 +6,31 @@
  */
 
 #include "tile_list.hpp"
+#include <linux/limits.h>
+#include <unistd.h>
 #include <algorithm>
+#include <memory>
 #include <vector>
 
-TileList::TileList(uint32_t maxzoom) :
-    maxzoom(maxzoom) {
+TileList::TileList(uint32_t maxzoom, bool check_tiles) :
+    maxzoom(maxzoom),
+    check_tiles(check_tiles) {
     last_tile_x = static_cast<uint32_t>(1u << maxzoom) + 1;
     last_tile_y = static_cast<uint32_t>(1u << maxzoom) + 1;
+}
+
+bool TileList::check_file_exists(const char* path) {
+    return (access(path, F_OK) == 0);
+}
+
+std::unique_ptr<char> TileList::get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix) {
+    std::unique_ptr<char> str {new char[PATH_MAX]};
+    if (path.empty()) {
+        snprintf(str.get(), PATH_MAX, "%u/%u/%u%s", zoom, x, y, suffix.c_str());
+    } else {
+        snprintf(str.get(), PATH_MAX, "%s/%u/%u/%u%s", path.c_str(), zoom, x, y, suffix.c_str());
+    }
+    return str;
 }
 
 void TileList::add_tile(uint32_t x, uint32_t y)
@@ -26,8 +44,8 @@ void TileList::add_tile(uint32_t x, uint32_t y)
     }
 }
 
-void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& suffix, const char delimiter)
-{
+void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& suffix,
+        const char delimiter, const std::string& path) {
     // build a sorted vector of all expired tiles
     std::vector<uint64_t> tiles_maxzoom(m_dirty_tiles.begin(),
                                         m_dirty_tiles.end());
@@ -52,7 +70,11 @@ void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& su
                 continue;
             }
             xy_coord_t xy = quadkey_to_xy(qt_current, maxzoom - dz);
-            fprintf(output_file, "%u/%u/%u%s%c", maxzoom - dz, xy.x, xy.y, suffix.c_str(), delimiter);
+            std::unique_ptr<char> tile_path = get_tile_path(path, maxzoom - dz, xy.x, xy.y, suffix);
+            if (check_tiles && !check_file_exists(tile_path.get())) {
+                continue;
+            }
+            fprintf(output_file, "%s%c", tile_path.get(), delimiter);
         }
         last_quadkey = *it;
     }

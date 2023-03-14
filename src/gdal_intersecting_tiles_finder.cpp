@@ -13,12 +13,13 @@
 #include <geos/geom/LinearRing.h>
 #include <geos/geom/Polygon.h>
 
-GDALIntersectingTilesFinder::GDALIntersectingTilesFinder(const bool verbose, uint32_t minzoom, uint32_t maxzoom) :
+GDALIntersectingTilesFinder::GDALIntersectingTilesFinder(const bool verbose, uint32_t minzoom,
+        uint32_t maxzoom, bool check_tiles) :
     m_features(0),
     m_minzoom(minzoom),
     m_verbose(verbose),
     m_maxzoom(maxzoom),
-    m_tile_list(maxzoom),
+    m_tile_list(maxzoom, check_tiles),
     m_coord_sequence_factory(),
     m_wkb_reader(),
     m_web_merc_ref(),
@@ -110,8 +111,9 @@ void GDALIntersectingTilesFinder::reset_progress() {
     }
 }
 
-void GDALIntersectingTilesFinder::output(FILE* output_file, const std::string& suffix, const char delimiter) {
-    m_tile_list.output(output_file, m_minzoom, suffix, delimiter);
+void GDALIntersectingTilesFinder::output(FILE* output_file, const std::string& suffix,
+        const char delimiter, const std::string& path) {
+    m_tile_list.output(output_file, m_minzoom, suffix, delimiter, path);
 }
 
 void GDALIntersectingTilesFinder::handle_geometry(OGRGeometry* geometry,

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <unordered_set>
 
@@ -26,6 +27,11 @@ struct xy_coord_t
 class TileList {
 
     uint32_t maxzoom;
+
+    /**
+     * Check if tiles exist.
+     */
+    bool check_tiles;
 
     /**
      * x coordinate of the tile which has been added as last tile to the unordered set
@@ -82,7 +88,11 @@ class TileList {
     static xy_coord_t quadkey_to_xy(uint64_t quadkey, uint32_t zoom);
 
 public:
-    TileList(uint32_t maxzoom);
+    TileList(uint32_t maxzoom, bool check_tiles);
+
+    static bool check_file_exists(const char* path);
+
+    static std::unique_ptr<char> get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix);
 
     /**
      * Add a single tile to the list
@@ -93,7 +103,7 @@ public:
      */
     void add_tile(uint32_t x, uint32_t y);
 
-    void output(FILE* output_file, uint32_t minzoom, const std::string& suffix, const char delimiter);
+    void output(FILE* output_file, uint32_t minzoom, const std::string& suffix, const char delimiter, const std::string& path);
 };
 
 

@@ -16,12 +16,17 @@
 
 
 void print_all_tiles_on_range(FILE* output_file, const uint32_t minzoom, const uint32_t maxzoom,
-        const BoundingBox& bbox, const std::string& suffix, const char delimiter) {
+        const BoundingBox& bbox, const std::string& suffix, const char delimiter,
+        const bool check_exists, const std::string& path) {
     for (uint32_t z = minzoom; z <= maxzoom; ++z) {
         ZoomRange range = ZoomRange::from_bbox_geographic(bbox, z);
         for (uint32_t x = range.xmin; x <= range.xmax; ++x) {
             for (uint32_t y = range.ymin; y <= range.ymax; ++y) {
-                fprintf(output_file, "%u/%u/%u%s%c", z, x, y, suffix.c_str(), delimiter);
+                std::unique_ptr<char> tile_path = TileList::get_tile_path(path, z, x, y, suffix);
+                if (check_exists && !TileList::check_file_exists(tile_path.get())) {
+                    continue;
+                }
+                fprintf(output_file, "%s%c", tile_path.get(), delimiter);
             }
         }
     }
@@ -32,8 +37,10 @@ void print_usage(char* argv[]) {
     "Positional Arguments:\n" \
     "Options:\n" \
     "  -h, --help                  print help and exit\n" \
-    "  -a STR, --append=STR       Print following string at the end of the output. The program will append newline character to the string\n" \
+    "  -a STR, --append=STR        Print following string at the end of the output. The program will append newline character to the string\n" \
     "  -b BBOX, --bbox=BBOX        bounding box separated by comma: min_lon,min_lat,max_lon,max_lat\n" \
+    "  -c, --check-exists          Check if the tiles exist as files on the disk.\n" \
+    "  -d DIR, --directory=DIR     Tile directory for --check-exists.\n" \
     "  -g PATH, --geom=PATH        Print all tiles intersecting with the (multi)linestrings and (multi)polygons in the specified file\n" \
     "  -n, --null                  Use NULL character, not LF as file delimiter.\n" \
     "  -s SUFFIX, --suffix=SUFFIX  suffix to append (do not forget the leading dot)\n" \
@@ -49,6 +56,8 @@ int main(int argc, char* argv[]) {
         {"append", required_argument, 0, 'a'},
         {"bbox", required_argument, 0, 'b'},
         {"buffer-size", required_argument, 0, 'B'},
+        {"check.exists", required_argument, 0, 'c'},
+        {"directory", required_argument, 0, 'd'},
         {"geom", required_argument, 0, 'g'},
         {"minzoom", required_argument, 0, 'z'},
         {"maxzoom", required_argument, 0, 'Z'},
@@ -68,13 +77,15 @@ int main(int argc, char* argv[]) {
     bool bbox_enabled = false;
     BoundingBox bbox {-180, -83, 180, 83};
     std::string shapefile_path;
+    bool check_exists = false;
+    std::string check_dir;
     FILE* output_file = stdout;
     std::string suffix;
     std::string append_str;
 
     char* rest;
     while (true) {
-        int c = getopt_long(argc, argv, "a:B:b:g:nz:Z:o:s:vh", long_options, 0);
+        int c = getopt_long(argc, argv, "a:B:b:cd:g:nz:Z:o:s:vh", long_options, 0);
         if (c == -1) {
             break;
         }
@@ -89,6 +100,12 @@ int main(int argc, char* argv[]) {
         case 'b':
             bbox = BoundingBox::from_str(optarg);
             bbox_enabled = true;
+            break;
+        case 'c':
+            check_exists = true;
+            break;
+        case 'd':
+            check_dir = optarg;
             break;
         case 'g':
             shapefile_path = optarg;
@@ -145,17 +162,22 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    if (check_exists && suffix.empty()) {
+        std::cerr << "WARNING: suffix is empty but checking tiles for existance is enabled.\n";
+    }
+
     if (bbox_enabled) {
-        print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix, delimiter);
+        print_all_tiles_on_range(output_file, minzoom, maxzoom, bbox, suffix, delimiter, check_exists, check_dir);
     }
 
     if (!shapefile_path.empty()) {
-        GDALIntersectingTilesFinder finder {verbose, static_cast<uint32_t>(minzoom), static_cast<uint32_t>(maxzoom)};
+        GDALIntersectingTilesFinder finder {verbose, static_cast<uint32_t>(minzoom),
+            static_cast<uint32_t>(maxzoom), check_exists};
         finder.find_intersections(shapefile_path, buffer_size);
         if (verbose) {
             std::cerr << "dumping tiles on medium zoom levels\n";
         }
-        finder.output(output_file, suffix, delimiter);
+        finder.output(output_file, suffix, delimiter, check_dir);
     } // close scope to ensure that destructor of IntersectingTilesFinder is called now to free memory.
     if (!append_str.empty()) {
         fprintf(output_file, "%s%c", append_str.c_str(), delimiter);
