@@ -20,10 +20,10 @@
 #include <geos/geom/GeometryFactory.h>
 #include <geos/geom/PrecisionModel.h>
 #include <geos/geom/prep/PreparedGeometryFactory.h>
-#include <gdal/gdal_version.h>
-#include <gdal/ogr_geometry.h>
-#include <gdal/ogrsf_frmts.h>
-#include <gdal/ogr_api.h>
+#include <gdal_version.h>
+#include <ogr_geometry.h>
+#include <ogrsf_frmts.h>
+#include <ogr_api.h>
 #include <geos/io/WKBReader.h>
 #include <geos/version.h>
 #include "tile_list.hpp"
