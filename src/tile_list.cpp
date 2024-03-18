@@ -12,9 +12,10 @@
 #include <memory>
 #include <vector>
 
-TileList::TileList(uint32_t maxzoom, bool check_tiles) :
+TileList::TileList(uint32_t maxzoom, bool check_tiles, bool tirex) :
     maxzoom(maxzoom),
-    check_tiles(check_tiles) {
+    check_tiles(check_tiles), 
+    tirex(tirex) {
     last_tile_x = static_cast<uint32_t>(1u << maxzoom) + 1;
     last_tile_y = static_cast<uint32_t>(1u << maxzoom) + 1;
 }
@@ -23,9 +24,11 @@ bool TileList::check_file_exists(const char* path) {
     return (access(path, F_OK) == 0);
 }
 
-std::unique_ptr<char> TileList::get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix) {
+std::unique_ptr<char> TileList::get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix, bool tirex_mode) {
     std::unique_ptr<char> str {new char[PATH_MAX]};
-    if (path.empty()) {
+    if (tirex_mode) {
+        snprintf(str.get(), PATH_MAX, "x=%u y=%u z=%u %s", 8*x, 8*y, zoom+3, suffix.c_str());
+    } else if (path.empty()) {
         snprintf(str.get(), PATH_MAX, "%u/%u/%u%s", zoom, x, y, suffix.c_str());
     } else {
         snprintf(str.get(), PATH_MAX, "%s/%u/%u/%u%s", path.c_str(), zoom, x, y, suffix.c_str());
@@ -70,7 +73,7 @@ void TileList::output(FILE* output_file, uint32_t minzoom, const std::string& su
                 continue;
             }
             xy_coord_t xy = quadkey_to_xy(qt_current, maxzoom - dz);
-            std::unique_ptr<char> tile_path = get_tile_path(path, maxzoom - dz, xy.x, xy.y, suffix);
+            std::unique_ptr<char> tile_path = get_tile_path(path, maxzoom - dz, xy.x, xy.y, suffix, tirex);
             if (check_tiles && !check_file_exists(tile_path.get())) {
                 continue;
             }

@@ -14,12 +14,12 @@
 #include <geos/geom/Polygon.h>
 
 GDALIntersectingTilesFinder::GDALIntersectingTilesFinder(const bool verbose, uint32_t minzoom,
-        uint32_t maxzoom, bool check_tiles) :
+        uint32_t maxzoom, bool check_tiles, bool tirex) :
     m_features(0),
     m_minzoom(minzoom),
     m_verbose(verbose),
     m_maxzoom(maxzoom),
-    m_tile_list(maxzoom, check_tiles),
+    m_tile_list(maxzoom, check_tiles, tirex),
     m_coord_sequence_factory(),
     m_wkb_reader(),
     m_web_merc_ref(),

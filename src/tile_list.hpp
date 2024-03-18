@@ -34,6 +34,11 @@ class TileList {
     bool check_tiles;
 
     /**
+     * tirex output mode
+     */
+    bool tirex;
+
+    /**
      * x coordinate of the tile which has been added as last tile to the unordered set
      */
     uint32_t last_tile_x;
@@ -88,11 +93,11 @@ class TileList {
     static xy_coord_t quadkey_to_xy(uint64_t quadkey, uint32_t zoom);
 
 public:
-    TileList(uint32_t maxzoom, bool check_tiles);
+    TileList(uint32_t maxzoom, bool check_tiles, bool tirex);
 
     static bool check_file_exists(const char* path);
 
-    static std::unique_ptr<char> get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix);
+    static std::unique_ptr<char> get_tile_path(const std::string& path, const uint32_t zoom, const uint32_t x, const uint32_t y, const std::string& suffix, bool tirex);
 
     /**
      * Add a single tile to the list
