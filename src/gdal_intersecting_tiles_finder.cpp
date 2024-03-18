@@ -9,7 +9,9 @@
 #include "utils.hpp"
 #include <cmath>
 #include <iostream>
-#include <geos/geom/CoordinateArraySequence.h>
+#if (GEOS_VERSION_MAJOR < 3 || (GEOS_VERSION_MAJOR == 3 && GEOS_VERSION_MINOR < 12))
+    #include <geos/geom/CoordinateArraySequence.h>
+#endif
 #include <geos/geom/LinearRing.h>
 #include <geos/geom/Polygon.h>
 
@@ -20,7 +22,9 @@ GDALIntersectingTilesFinder::GDALIntersectingTilesFinder(const bool verbose, uin
     m_verbose(verbose),
     m_maxzoom(maxzoom),
     m_tile_list(maxzoom, check_tiles, tirex),
+#if (GEOS_VERSION_MAJOR < 3 || (GEOS_VERSION_MAJOR == 3 && GEOS_VERSION_MINOR < 12))
     m_coord_sequence_factory(),
+#endif
     m_wkb_reader(),
     m_web_merc_ref(),
 #ifdef GEOS_36
@@ -74,8 +78,14 @@ void GDALIntersectingTilesFinder::handle_geos_geometry(geos_geom_type geometry, 
             coords->emplace_back(projection::tile_x_to_merc(x + 1, m_maxzoom), projection::tile_y_to_merc(y + 1, m_maxzoom));
             coords->emplace_back(projection::tile_x_to_merc(x + 1, m_maxzoom), projection::tile_y_to_merc(y, m_maxzoom));
             coords->emplace_back(projection::tile_x_to_merc(x, m_maxzoom), projection::tile_y_to_merc(y, m_maxzoom));
+#if (GEOS_VERSION_MAJOR < 3 || (GEOS_VERSION_MAJOR == 3 && GEOS_VERSION_MINOR < 12))
             std::unique_ptr<geos::geom::CoordinateSequence> coord_sequence {m_coord_sequence_factory.create(coords.release(), 2)};
             std::unique_ptr<geos::geom::LineString> ring {m_geos_factory->createLineString(coord_sequence.release())};
+#else
+            std::unique_ptr<geos::geom::CoordinateSequence> coord_sequence {new geos::geom::CoordinateSequence(5, 2)};
+            coord_sequence->setPoints(*coords);
+            std::unique_ptr<geos::geom::LineString> ring {m_geos_factory->createLineString(*(coord_sequence))};
+#endif
             if (prep->intersects(ring.get())) {
                 m_tile_list.add_tile(x, y);
             }

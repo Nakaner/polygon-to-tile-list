@@ -12,15 +12,18 @@
 #include <sstream>
 #include <string>
 #include <geos/index/quadtree/Quadtree.h>
-#include <geos/geom/CoordinateArraySequenceFactory.h>
+#include <geos/version.h>
+#if (GEOS_VERSION_MAJOR < 3 || (GEOS_VERSION_MAJOR == 3 && GEOS_VERSION_MINOR < 12))
+  #include <geos/geom/CoordinateArraySequenceFactory.h>
+#endif
 #include <geos/geom/Geometry.h>
 #include <geos/geom/GeometryFactory.h>
 #include <geos/geom/PrecisionModel.h>
 #include <geos/geom/prep/PreparedGeometryFactory.h>
-#include <gdal/gdal_version.h>
-#include <gdal/ogr_geometry.h>
-#include <gdal/ogrsf_frmts.h>
-#include <gdal/ogr_api.h>
+#include <gdal_version.h>
+#include <ogr_geometry.h>
+#include <ogrsf_frmts.h>
+#include <ogr_api.h>
 #include <geos/io/WKBReader.h>
 #include <geos/version.h>
 #include "tile_list.hpp"
@@ -63,7 +66,9 @@ class GDALIntersectingTilesFinder {
     bool m_verbose;
     uint32_t m_maxzoom;
     TileList m_tile_list;
+#if (GEOS_VERSION_MAJOR < 3 || (GEOS_VERSION_MAJOR == 3 && GEOS_VERSION_MINOR < 12))
     geos::geom::CoordinateArraySequenceFactory m_coord_sequence_factory;
+#endif
     geos_geometry_factory_type m_geos_factory;
     std::unique_ptr<geos::index::quadtree::Quadtree> m_tree;
 
