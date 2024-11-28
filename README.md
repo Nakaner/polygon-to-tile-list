@@ -1,5 +1,8 @@
 # Polygon-To-Tile-List
 
+Polygon-To-Tile-List converts a geometry or bounding box into a list of tile coordinates (zoom/x/y)
+according to the [slippy map tile naming convention](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames).
+
 ## Usage
 
 ```
@@ -38,3 +41,6 @@ cmake ..
 make
 ```
 
+## License
+
+This project is licensed under the terms of General Public License version 2 or newer.
