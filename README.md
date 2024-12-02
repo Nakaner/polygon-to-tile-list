@@ -29,7 +29,7 @@ If you specify both a bounding box and a geometry, tiles intersecting any of the
 
 ## Dependencies
 
-* GEOS
+* Boost Geometry
 * GDAL
 
 ## Building

@@ -7,7 +7,7 @@
 #
 #-----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -34,20 +34,6 @@ set(AUTHOR "Michael Reichert <michael.reichert@geofabrik.de>")
 #
 #  Find external dependencies
 #
-#-----------------------------------------------------------------------------
-
-#----------------------------------------------------------------------
-# geos
-find_path(GEOS_INCLUDE_DIR geos_c.h)
-find_library(GEOS_LIBRARY NAMES geos)
-
-if(GEOS_INCLUDE_DIR AND GEOS_LIBRARY)
-    SET(GEOS_FOUND 1)
-    include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-else()
-    message(WARNING "GEOS library is required but not found, please install it or configure the paths.")
-endif()
-
 #----------------------------------------------------------------------
 # GDAL
 find_package(GDAL)
@@ -59,14 +45,22 @@ else()
     message(WARNING "GDAL library is required but not found, please install it or configure the paths.")
 endif()
 
+find_package(Boost REQUIRED)
+if(Boost_INCLUDE_DIR)
+    SET(BOOST_FOUND 1)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIR})
+else()
+    message(WARNING "Boost library is required but not found, please install it or configure the paths.")
+endif()
+
 #-----------------------------------------------------------------------------
 #
-#  Decide which C++ version to use (Minimum/default: C++11).
+#  Decide which C++ version to use (Minimum/default: C++17).
 #
 #-----------------------------------------------------------------------------
 if(NOT MSVC)
     if(NOT USE_CPP_VERSION)
-        set(USE_CPP_VERSION c++11)
+        set(USE_CPP_VERSION c++17)
     endif()
     message(STATUS "Use C++ version: ${USE_CPP_VERSION}")
     # following only available from cmake 2.8.12:
