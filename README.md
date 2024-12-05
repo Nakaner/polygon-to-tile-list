@@ -10,14 +10,19 @@ polygon-to-tile-list OPTIONS
 
 Options:
   -h, --help                  print help and exit
+  -a STR, --append=STR        Print following string at the end of the output. The program will append newline character to the string
   -b BBOX, --bbox=BBOX        bounding box separated by comma: min_lon,min_lat,max_lon,max_lat
-  -g FILE, --geom=FILE        path to shape file with (multi)linestrings or (multi)polygons
-  --buffer-size=METER         buffer size in meter (not for bounding boxes)
-  -z ZOOM, --minzoom=ZOOM     maximal zoom level for the low zoom range
-  -Z ZOOM, --maxzoom=ZOOM     maximal zoom level for the med zoom range
+  --buffer-size=SIZE          buffer size in meter for lines and polygons (not bounding boxes)
+  -c, --check-exists          Check if the tiles exist as files on the disk.
+  -d DIR, --directory=DIR     Tile directory for --check-exists.
+  -g PATH, --geom=PATH        Print all tiles intersecting with the (multi)linestrings and (multi)polygons in the specified file
+  -n, --null                  Use NULL character, not LF as file delimiter.
   -s SUFFIX, --suffix=SUFFIX  suffix to append (do not forget the leading dot)
-  -o FILE, --output=FILE      output file (instead of standard output)
-  -v, --verbose               verbose output
+  -t, --tirex                 tirex mode (different output style, only coords that are multiples of 8)
+  -z ZOOM, --minzoom=ZOOM     minimum zoom level, defaults to 0
+  -Z ZOOM, --maxzoom=ZOOM     maximum zoom level, defaults to 14
+  -o FILE, --output=FILE      write output to file instead of standard output
+  -v, --verbose               be verbose
 ```
 
 This program generates a list of tile coordinates, in the format zoom/x/y with an optional file name suffix, on stdout.
